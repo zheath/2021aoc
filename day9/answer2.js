@@ -1,6 +1,6 @@
-const input = require('./sample')
+const input = require('./input')
 const fs = require('fs')
-const width = 10
+const width = 100
 const field = []
 const basins = {'1': 0}
 let currBasin = 1
@@ -27,54 +27,59 @@ field.forEach((row, y) => {
     // console.log('')
     // console.table(field)
 })
-console.table(field)
+// console.table(field)
 writeCSV();
 // console.log(basins)
 // console.log(Object.values(basins).sort((a, b) => b-a))
 console.log(Object.values(basins).sort((a, b) => b-a).slice(0,3).reduce((acc, x) => acc * x, 1))
 
 function searchField(y, x){
-    if(!['*','9'].includes(field[y][x])){return field[y][x]}
-    
-    const left = field[y][x-1] && !['*','9'].includes(field[y][x-1]) ? field[y][x-1] : null
+    const above = searchUp(y,x)
+    if(above){return above}
+
+    const left = searchLeft(y,x)
     if(left){return left}
 
-    const above = field[y-1] && field[y-1][x] && field[y-1][x] !== '9' ? field[y-1][x] : null
-    if(above){return above}
-
-    const right = field[y][x+1] && field[y][x+1] !== '9' ? searchField(y, x+1) : null
+    const right = searchRight(y,x)
     if(right){return right}
 
-    const below = field[y+1] ? field[y+1][x] : null
-    if(below === '9' || !field[y+1]){return currBasin}
+    if(!field[y+1] || field[y+1][x] === '9'){return currBasin}
 
-    const downLeft = searchBack(y+1, x)
-    if(downLeft){return downLeft}
-
-    return searchForward(y+1, x)
+    return searchField(y+1, x)
 }
 
-function next(y, x){
-    const above = !['*','9'].includes(field[y-1][x]) ? field[y-1][x] : null
-    if(above){return above}
-    if(!field[y][x-1] || field[y][x-1] === '9'){return null}
-    
-    const back = searchBack(y, x-1)
-    const next = field[y+1] && field[y+1][x] === '*'  searchBack(y+1, x) : null
-
-    return searchBack(y, x-1)
-}
-
-function searchForward(y, x){
+function searchUp(y,x){
     let above = '*'
     let inc = 1
     while(above === '*'){
         above = field[y-inc] && field[y-inc][x] !== '9' ? field[y-inc][x] : null
         inc += 1
     }
-    if(above){return above}
-    if(!field[y][x+1] || field[y][x+1] === '9'){return currBasin}
-    return searchForward(y, x+1)
+    return above
+}
+
+function searchLeft(y,x){
+    let left = '*'
+    let inc = 1
+    while(left === '*'){
+        const test = field[y][x-inc] && field[y][x-inc] !== '9' ? searchUp(y, x-inc) : null
+        if(test){return test}
+        left = field[y][x-inc] && field[y][x-inc] !== '9' ? field[y][x-inc] : null
+        inc += 1
+    }
+    return left
+}
+
+function searchRight(y,x){
+    let right = '*'
+    let inc = 1
+    while(right === '*'){
+        const test = field[y][x+inc] && field[y][x+inc] !== '9' ? searchUp(y, x+inc) : null
+        if(test){return test}
+        right = field[y][x+inc] && field[y][x+inc] !== '9' ? field[y][x+inc] : null
+        inc += 1
+    }
+    return right
 }
 
 function writeCSV(){
