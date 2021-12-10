@@ -1,9 +1,12 @@
-const input = require('./input')
+const input = require('./test1')
 const fs = require('fs')
-const width = 100
+const Node = require('./Node')
+const width = 10
 const field = []
 const basins = {'1': 0}
 let currBasin = 1
+const segments = []
+let segment = []
 
 let i = 0;
 while(i < input.length){
@@ -11,27 +14,47 @@ while(i < input.length){
     i+=width
 }
 
-// console.table(field)
 field.forEach((row, y) => {
     row.forEach((p,x) => {
+        const n = new Node(y, x, p)
         if(p === '*'){
-            const basinId = searchField(y, x);
-            basins[basinId] = basins[basinId] ? basins[basinId] + 1 : 1
-            field[y][x] = basinId
+            segment.push(n)
         } else {
-            currBasin += 1
+            if(segment.length > 0){segments.push(segment)}
+            segment = []
         }
     })
-    // console.log('')
-    // console.log('***************************************')
-    // console.log('')
-    // console.table(field)
 })
+
+console.log(segments)
+
+// nodes.forEach(node => solveNode(node))
+
+// function solveNode(n){
+//     console.log(n)
+// }
+
+console.table(field.map(r => r.map(n => n.value)))
+// field.forEach((row, y) => {
+//     row.forEach((p,x) => {
+//         if(p === '*'){
+//             const basinId = searchField(y, x);
+//             basins[basinId] = basins[basinId] ? basins[basinId] + 1 : 1
+//             field[y][x] = basinId
+//         } else {
+//             currBasin += 1
+//         }
+//     })
+//     console.log('')
+//     console.log('***************************************')
+//     console.log('')
+//     console.table(field)
+// })
 // console.table(field)
-writeCSV();
+// writeCSV();
 // console.log(basins)
 // console.log(Object.values(basins).sort((a, b) => b-a))
-console.log(Object.values(basins).sort((a, b) => b-a).slice(0,3).reduce((acc, x) => acc * x, 1))
+// console.log(Object.values(basins).sort((a, b) => b-a).slice(0,3).reduce((acc, x) => acc * x, 1))
 
 function searchField(y, x){
     const above = searchUp(y,x)
