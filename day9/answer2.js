@@ -1,149 +1,71 @@
-const input = require('./test1')
-const fs = require('fs')
+const input = require('./input')
 const Node = require('./Node')
-const width = 10
+const fs = require('fs')
 const field = []
-const basins = []
-let currBasin = 1
-const segments = []
-let segment = []
-let checkedSegments = []
+const width = 100
+const basins = {}
+const lowPoints = []
 
 let i = 0;
 while(i < input.length){
-    field.push(input.slice(i,i+width).replace(/[0-8]/g, '*').split(''))
+    field.push(input.slice(i,i+width).split(''))
     i+=width
 }
 
-field.forEach((row, y) => {
-    row.forEach((p,x) => {
-        const n = new Node(y, x, p)
-        if(p === '*'){
-            segment.push(n)
-        } else {
-            if(segment.length > 0){segments.push(segment)}
-            segment = []
-        }
+field.forEach((row, y) => row.forEach((pVal, x) => field[y][x] = new Node(y, x, pVal)))
+field.forEach((row) => {
+    row.forEach(node => {
+        node.left = field[node.y][node.x-1] ? field[node.y][node.x-1] : null //left of current
+        node.right = field[node.y][node.x+1] ? field[node.y][node.x+1] : null //right of current
+        node.up = field[node.y-1] ? field[node.y-1][node.x] : null //above current
+        node.down = field[node.y+1] ? field[node.y+1][node.x] : null //below current
+        if((node.value < (node.left?.value ?? 99)) && 
+           (node.value < (node.right?.value ?? 99)) && 
+           (node.value < (node.up?.value ?? 99)) && 
+           (node.value < (node.down?.value ?? 99))){lowPoints.push({y: node.y, x: node.x})}        
     })
 })
+lowPoints.forEach(lp => basins[JSON.stringify(lp)] = [])
 
-// console.log(segments)
-
-segments.forEach((s1, i) => {
-    let result = [...s1]
-    if(!checkedSegments.includes(i)){        
-        checkedSegments.push(i)
-        for(let x = 0; x < segments.length; x++){
-            if(x !== i){
-                const s2 = segments[x]
-                if(areAdjacent(s1, s2)){
-                    result = result.concat(s2)
-                    checkedSegments.push(x)
-                }
-            }
-        }
-        basins.push(result)
-    }
-})
-
-
-basins.forEach((basin, i) => basin.forEach(n => n.value = i))
-console.log(basins)
-
-
-function areAdjacent(s1, s2){
-    let out = false
-    s1.forEach(n1 => {
-        s2.forEach(n2 => {
-            if(n1.x === n2.x && (n1.y === n2.y-1 || n1.y === n2.y+1)){
-                out = true
-            }
-        })
-    })
-    return out
-}
-
-// nodes.forEach(node => solveNode(node))
-
-// function solveNode(n){
-//     console.log(n)
-// }
-
-console.table(field.map(r => r.map(n => n.value)))
-// field.forEach((row, y) => {
-//     row.forEach((p,x) => {
-//         if(p === '*'){
-//             const basinId = searchField(y, x);
-//             basins[basinId] = basins[basinId] ? basins[basinId] + 1 : 1
-//             field[y][x] = basinId
-//         } else {
-//             currBasin += 1
-//         }
-//     })
-//     console.log('')
-//     console.log('***************************************')
-//     console.log('')
-//     console.table(field)
-// })
-// console.table(field)
-// writeCSV();
 // console.log(basins)
-// console.log(Object.values(basins).sort((a, b) => b-a))
-// console.log(Object.values(basins).sort((a, b) => b-a).slice(0,3).reduce((acc, x) => acc * x, 1))
 
-function searchField(y, x){
-    const above = searchUp(y,x)
-    if(above){return above}
+// console.log(getNode({y: 0, x: 1}))
 
-    const left = searchLeft(y,x)
-    if(left){return left}
+console.log(Object.keys(basins)
+    .map(basinKey => getNode(JSON.parse(basinKey)))
+    .map((node,i) => searchBasin(node, i))
+    .sort((a, b) => b-a)
+    .slice(0,3)
+    .reduce((tot, curr) => tot * curr, 1))
 
-    const right = searchRight(y,x)
-    if(right){return right}
+// console.table(field.map(row => row.map(n => n.value)))
+writeCSV()
 
-    if(!field[y+1] || field[y+1][x] === '9'){return currBasin}
+function getNode(coord){return field[coord.y][coord.x]}
 
-    return searchField(y+1, x)
-}
-
-function searchUp(y,x){
-    let above = '*'
-    let inc = 1
-    while(above === '*'){
-        above = field[y-inc] && field[y-inc][x] !== '9' ? field[y-inc][x] : null
-        inc += 1
+function searchBasin(node, basinId){
+    let basinCount = 1
+    node.visited = true
+    node.value = basinId
+    if(node.right && node.right.value !== 9 && !node.right.visited){
+        basinCount += searchBasin(node.right, basinId)
     }
-    return above
-}
-
-function searchLeft(y,x){
-    let left = '*'
-    let inc = 1
-    while(left === '*'){
-        const test = field[y][x-inc] && field[y][x-inc] !== '9' ? searchUp(y, x-inc) : null
-        if(test){return test}
-        left = field[y][x-inc] && field[y][x-inc] !== '9' ? field[y][x-inc] : null
-        inc += 1
+    if(node.left && node.left.value !== 9 && !node.left.visited){
+        basinCount += searchBasin(node.left, basinId)
     }
-    return left
-}
-
-function searchRight(y,x){
-    let right = '*'
-    let inc = 1
-    while(right === '*'){
-        const test = field[y][x+inc] && field[y][x+inc] !== '9' ? searchUp(y, x+inc) : null
-        if(test){return test}
-        right = field[y][x+inc] && field[y][x+inc] !== '9' ? field[y][x+inc] : null
-        inc += 1
+    if(node.up && node.up.value !== 9 && !node.up.visited){
+        basinCount += searchBasin(node.up, basinId)
     }
-    return right
+    if(node.down && node.down.value !== 9 && !node.down.visited){
+        basinCount += searchBasin(node.down, basinId)
+    }
+    return basinCount
 }
 
 function writeCSV(){
     let data = ''
     field.forEach(row => {
-        const rowString = row.join(',') + '\n'
+        const rowString = row.map(n => n.value).join(',') + '\n'
         data = data + rowString
     })
     fs.writeFile('field.csv',data, () => {})
