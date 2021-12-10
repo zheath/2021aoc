@@ -3,10 +3,11 @@ const fs = require('fs')
 const Node = require('./Node')
 const width = 10
 const field = []
-const basins = {'1': 0}
+const basins = []
 let currBasin = 1
 const segments = []
 let segment = []
+let checkedSegments = []
 
 let i = 0;
 while(i < input.length){
@@ -26,7 +27,41 @@ field.forEach((row, y) => {
     })
 })
 
-console.log(segments)
+// console.log(segments)
+
+segments.forEach((s1, i) => {
+    let result = [...s1]
+    if(!checkedSegments.includes(i)){        
+        checkedSegments.push(i)
+        for(let x = 0; x < segments.length; x++){
+            if(x !== i){
+                const s2 = segments[x]
+                if(areAdjacent(s1, s2)){
+                    result = result.concat(s2)
+                    checkedSegments.push(x)
+                }
+            }
+        }
+        basins.push(result)
+    }
+})
+
+
+basins.forEach((basin, i) => basin.forEach(n => n.value = i))
+console.log(basins)
+
+
+function areAdjacent(s1, s2){
+    let out = false
+    s1.forEach(n1 => {
+        s2.forEach(n2 => {
+            if(n1.x === n2.x && (n1.y === n2.y-1 || n1.y === n2.y+1)){
+                out = true
+            }
+        })
+    })
+    return out
+}
 
 // nodes.forEach(node => solveNode(node))
 
