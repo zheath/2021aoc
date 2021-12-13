@@ -6,7 +6,7 @@ module.exports = class Paper{
     fold(inst){
         const direction = inst[0]
         const position = inst[1]
-        console.log(`folding paper on the ${direction === 'y' ? 'vertically' : 'horizontally'} at position ${position}`)
+        // console.log(`folding paper on the ${direction === 'y' ? 'vertically' : 'horizontally'} at position ${position}`)
         // console.log(this.dots)
         const dotsToShift = this.dots.filter(dot => dot[direction] > position)
         // console.log(dotsToShift.length)
@@ -24,7 +24,7 @@ module.exports = class Paper{
         for(let y = 0; y <= bounds.y; y++){
             const row = []
             for(let x = 0; x<= bounds.x; x++){
-                row.push(_.findIndex(this.dots, dot => (dot.y === y && dot.x === x)) >= 0 ? '#' : ' ')
+                row.push(_.findIndex(this.dots, dot => (dot.y === y && dot.x === x)) >= 0 ? 0 : ' ')
             }
             output.push(row)
         }
