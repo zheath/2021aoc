@@ -29,12 +29,12 @@ module.exports = class Polymer{
         })
         return this.currStr()
     }
-    getRuleMatches(){
+    getRuleMatches(str){
         const matches = []
-        const maxIndex = this.periodicTable.reduce((max, el) => {
-            const maxInd = Math.max(...el.insertIndices)
-            return maxInd > max ? maxInd : max
-        }, 0)
+        // const maxIndex = this.periodicTable.reduce((max, el) => {
+        //     const maxInd = Math.max(...el.insertIndices)
+        //     return maxInd > max ? maxInd : max
+        // }, 0)
         let index = 0
         while(index < str.length){
             const testStr = str.slice(index, index+2)

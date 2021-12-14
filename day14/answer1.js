@@ -1,6 +1,6 @@
 const Polymer = require('./Polymer')
 const Element = require('./Element')
-const input = require('./sample')
+const input = require('./input')
 const periodicTable = []
 const rules = input.rules.reduce((rulesObj, curr) => {
     const insertPair = curr.split(' -> ')[0]
@@ -21,7 +21,7 @@ p.origString.split('').forEach((elId, index) => {
     element.insertIndices.push(index)
 })
 
-for(let i = 1; i<=40; i++){console.log('Step',i,p.polymorph().length)}
+for(let i = 1; i<=10; i++){console.log('Step',i,p.polymorph().length)}
 const max = Math.max(...p.periodicTable.map(el => el.count))
 const min = Math.min(...p.periodicTable.map(el => el.count))
 console.log(`${max} - ${min} = ${max - min}`)
