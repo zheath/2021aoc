@@ -1,4 +1,3 @@
-const { now } = require('lodash')
 const Node = require('./Node')
 const input = require('./input')
 const pq = []
